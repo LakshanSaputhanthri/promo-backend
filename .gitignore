@@ -1,0 +1,26 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment variables file
+.env
+
+# SQLite database file
+sqlite*.db*
+celerybeat-schedule.db
+
+# Coverage reports
+.coverage
+coverage.xml
+pytest.xml
+
+# Idea config
+.idea
+.run
