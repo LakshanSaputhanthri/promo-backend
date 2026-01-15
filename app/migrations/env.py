@@ -1,40 +1,67 @@
-import sys
-import os
 from logging.config import fileConfig
-from sqlalchemy import create_engine, pool
+import sys
+from pathlib import Path
+
 from alembic import context
+from sqlalchemy import create_engine
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+# -----------------------------
+# Fix import path
+# -----------------------------
+BASE_DIR = Path(__file__).resolve().parents[2]
+sys.path.append(str(BASE_DIR))
 
+# -----------------------------
+# Imports
+# -----------------------------
 from app.config import settings
 from app.database import Base
-from app.models.promotions import Promotion, Merchant
+from app.models.promotions import Promotion
 
-SYNC_DATABASE_URL = settings.DATABASE_URL.replace("asyncpg", "psycopg2")
-target_metadata = Base.metadata
-
+# -----------------------------
+# Alembic config
+# -----------------------------
 config = context.config
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# -----------------------------
+# Metadata
+# -----------------------------
+target_metadata = Base.metadata
 
-def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode."""
+# -----------------------------
+# Sync DB URL (Alembic MUST be sync)
+# -----------------------------
+SYNC_DATABASE_URL = settings.DATABASE_URL.replace(
+    "postgresql+asyncpg",
+    "postgresql+psycopg2",
+)
+
+engine = create_engine(SYNC_DATABASE_URL)
+
+
+def run_migrations_offline():
     context.configure(
         url=SYNC_DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
     )
+
     with context.begin_transaction():
         context.run_migrations()
 
 
-def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    connectable = create_engine(SYNC_DATABASE_URL, poolclass=pool.NullPool)
-    with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+def run_migrations_online():
+    with engine.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+            compare_server_default=True,
+        )
+
         with context.begin_transaction():
             context.run_migrations()
 

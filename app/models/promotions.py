@@ -9,20 +9,9 @@ from app.core.timezone import DateTimeUTC, utc_now
 class Promotion(Base):
     __tablename__ = "promotions"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String, nullable=False)
-    thumb: Mapped[str] = mapped_column(String)
-    merchant: Mapped[uuid.UUID] = mapped_column(ForeignKey("merchant.id", ondelete="CASCADE"))
-    category = mapped_column(String)
-    start_date = mapped_column(DateTimeUTC, default=utc_now)
-    end_date = mapped_column(DateTimeUTC, default=utc_now)
-
-
-class Merchant(Base):
-    __tablename__ = "merchant"
-
-    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    url: Mapped[str] = mapped_column(String)
-
-    promotions = relationship("Promotion", back_populates="merchant", cascade="all, delete")
+    merchant: Mapped[str] = mapped_column(String, nullable=False)  # just store name
+    thumb: Mapped[str] = mapped_column(String, nullable=True)
+    card_type: Mapped[str] = mapped_column(String, nullable=False)
+    valid_to: Mapped[str] = mapped_column(String, nullable=True)
