@@ -12,7 +12,6 @@ from app.schemas.promotion import PromotionOut
 router = APIRouter(prefix="/promotions", tags=["Promotions"])
 
 
-# Dependency to get DB session
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
@@ -30,7 +29,7 @@ async def get_promotions(
     if merchant:
         filters.append(Promotion.merchant == merchant)
     if valid_before:
-        filters.append(Promotion.valid_to >= valid_before)  # Promotions still valid
+        filters.append(Promotion.valid_to >= valid_before)
 
     if filters:
         query = query.where(and_(*filters))

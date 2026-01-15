@@ -20,12 +20,10 @@ async def fetch_hnb_page(session: aiohttp.ClientSession, page: int):
 
 async def fetch_all_hnb_promos():
     async with aiohttp.ClientSession() as session:
-        # First page to get totalPages
         data = await fetch_hnb_page(session, 1)
         total_pages = data.get("totalPages", 1)
         all_offers = data["data"]
 
-        # Fetch remaining pages concurrently
         tasks = [fetch_hnb_page(session, p) for p in range(2, total_pages + 1)]
         results = await asyncio.gather(*tasks)
         for page_data in results:
@@ -36,9 +34,8 @@ async def fetch_all_hnb_promos():
 
 async def save_hnb_promos_to_db():
     offers = await fetch_all_hnb_promos()
-    async with AsyncSessionLocal() as session:  # type: AsyncSession
+    async with AsyncSessionLocal() as session:
         for offer in offers:
-            # Check if promotion already exists by title + merchant
             result = await session.execute(
                 select(Promotion).where((Promotion.title == offer["title"]) & (Promotion.merchant == offer["merchant"]))
             )
@@ -46,7 +43,6 @@ async def save_hnb_promos_to_db():
             if promo_exists:
                 continue
 
-            # Add new promotion
             promo = Promotion(
                 title=offer["title"],
                 merchant=offer["merchant"],
@@ -69,10 +65,8 @@ async def refresh_hnb_promotions(db):
     """
     offers = await fetch_all_hnb_promos()
 
-    # 1️⃣ delete all
     await db.execute(delete(Promotion))
 
-    # 2️⃣ insert fresh
     for offer in offers:
         db.add(
             Promotion(

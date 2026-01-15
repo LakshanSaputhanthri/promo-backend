@@ -9,7 +9,6 @@ def transactional(func):
     async def wrapper(*args, **kwargs):
         existing_session: AsyncSession = db_session_context.get()
         if existing_session:
-            # Nested transactional call
             return await func(*args, **kwargs)
 
         async with AsyncSessionLocal() as session:
