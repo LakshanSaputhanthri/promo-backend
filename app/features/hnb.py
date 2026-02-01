@@ -10,7 +10,16 @@ from sqlalchemy import delete
 
 import uuid
 
+DEFAULT_THUMB = "https://en.wikipedia.org/wiki/File:Hatton_National_Bank_New_Logo.jpg"
+
+
 API_URL = "https://venus.hnb.lk/api/get_all_web_card_promos?page={page}&cardType=Credit"
+
+
+def get_hnb_thumb_url(thumb_path: str | None) -> str:
+    if not thumb_path:
+        return DEFAULT_THUMB
+    return f"https://assets.hnb.lk/atdi/{thumb_path}"
 
 
 async def fetch_hnb_page(session: aiohttp.ClientSession, page: int):
@@ -46,7 +55,7 @@ async def save_hnb_promos_to_db():
             promo = Promotion(
                 title=offer["title"],
                 merchant=offer["merchant"],
-                thumb=offer.get("thumb"),
+                thumb=get_hnb_thumb_url(offer.get("thumb")),
                 card_type=offer["cardType"],
                 valid_to=offer["to"],
             )
@@ -72,7 +81,7 @@ async def refresh_hnb_promotions(db):
             Promotion(
                 title=offer["title"],
                 merchant=offer["merchant"],
-                thumb=offer.get("thumb"),
+                thumb=get_hnb_thumb_url(offer.get("thumb")),
                 card_type=offer["cardType"],
                 valid_to=offer["to"],
             )
